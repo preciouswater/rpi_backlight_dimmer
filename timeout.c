@@ -123,24 +123,25 @@ int main(int argc, char* argv[]){
                 now = time(NULL);
                 
                 for (i = 0; i < num_dev; i++) {               
-                        event_size = read(eventfd[i], event, size*64);
-                        if(event_size != -1) {
-                                printf("%s Value: %d, Code: %x\n", device[i], event[0].value, event[0].code);
-                                touch = now;
-				current_brightness = actual_brightness;
-				printf("Brightness now %d\n", current_brightness);
-				fprintf(brightfd, "%d\n", current_brightness);
-				fflush(brightfd);
-				fseek(brightfd, 0, SEEK_SET);
-
+                    event_size = read(eventfd[i], event, size*64);
+                    if(event_size != -1) {
+                        // printf("%s Value: %d, Code: %x\n", device[i], event[0].value, event[0].code);
+                        touch = now;
+                        if (current_brightness != max_brightness){
+                            current_brightness = max_brightness;
+                            printf("Resetting Brightness now to max%d\n", current_brightness);
+                            fprintf(brightfd, "%d\n", current_brightness);
+                            fflush(brightfd);
+                            fseek(brightfd, 0, SEEK_SET);
                         }
+                    }
                 }
 
                 if(difftime(now, touch) > timeout) {
 			if (current_brightness > 0) {
 				current_brightness -= 15;
 				if (current_brightness < 0) current_brightness = 0;
-				printf("Brightness now %d\n", current_brightness);
+				printf("Adjusting. Brightness now %d\n", current_brightness);
 				fprintf(brightfd, "%d\n", current_brightness);
 				fflush(brightfd);
 				fseek(brightfd, 0, SEEK_SET);
